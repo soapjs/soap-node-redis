@@ -1,4 +1,4 @@
-import { RedisConfig } from './redis.config';
+import { RedisConfig } from "./redis.config";
 
 export class RedisUtils {
   /**
@@ -8,14 +8,14 @@ export class RedisUtils {
    */
   static buildRedisUrl(config: RedisConfig): string {
     const { user, password, iana, database } = config;
-    let url = iana ? 'rediss://' : 'redis://';
+    let url = iana ? "rediss://" : "redis://";
 
     if (user && password) {
       url += `${user}:${password}@`;
     }
 
-    const hosts = config.hosts.length ? config.hosts : ['localhost'];
-    const ports = config.ports.length ? config.ports : ['6379'];
+    const hosts = config.hosts.length ? config.hosts : ["localhost"];
+    const ports = config.ports.length ? config.ports : ["6379"];
     const defaultPort = ports[0];
 
     let hostsPortsDiff = hosts.length - ports.length;
@@ -28,12 +28,17 @@ export class RedisUtils {
       return `${host}:${ports[i]}`;
     });
 
-    url += hostsAndPorts.join(',');
+    url += hostsAndPorts.join(",");
 
     if (database != null) {
       url += `/${database}`;
     }
 
     return url;
-  };
+  }
+
+  static convertStringToQueryArray(rawQuery: string) {
+    const parts = rawQuery.match(/(?:[^\s"]+|"[^"]*")+/g);
+    return parts.map((part) => part.replace(/"/g, ""));
+  }
 }

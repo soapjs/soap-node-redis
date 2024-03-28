@@ -1,29 +1,66 @@
-import { Where } from "@soapjs/soap";
+import {
+  Condition,
+  NestedCondition,
+  Where,
+  WhereCondition,
+} from "@soapjs/soap";
 
 /**
- * Class for parsing Where clauses and converting them into Redis command parameters.
+ * Class for parsing Where clauses and converting them into RedisSearch command parameters.
  */
 export class RedisWhereParser {
-  /**
-   * Parses the Where clause and returns the Redis command parameters.
-   * @param {Where} where - The Where clause to be parsed.
-   * @returns {string[]} - An array of Redis command parameters.
-   */
-  public static parse(where: Where) {
-    if (where instanceof Where && where.isRaw === false) {
-      const {
-        result: { ...chain },
-      } = where;
-
-      for (const chainKey in chain) {
-        const key = chainKey;
-
-        if (key == Where.KEYS) {
-          if (chain[key].length && chain[key][0].value) {
-            return chain[key][0].value as string[];
-          }
-        }
-      }
+  static parse(data: Where | WhereCondition | null): string {
+    if (!data) {
+      return "*";
     }
+
+    if (data instanceof Where) {
+      return RedisWhereParser.parse(data.result);
+    }
+
+    if ("left" in data) {
+      return RedisWhereParser.parseSimpleCondition(data);
+    } else if ("conditions" in data) {
+      return RedisWhereParser.parseNestedCondition(data);
+    }
+
+    throw new Error("Invalid condition format");
+  }
+
+  private static parseSimpleCondition(condition: Condition): string {
+    const { left, operator, right } = condition;
+    switch (operator) {
+      case "eq":
+        return `@${left}:{${right}}`;
+      case "ne":
+        return `-@${left}:{${right}}`;
+      case "gt":
+        return `@${left}:[(${right} +inf]`;
+      case "lt":
+        return `@${left}:[-inf (${right})]`;
+      case "gte":
+        return `@${left}:[${right} +inf]`;
+      case "lte":
+        return `@${left}:[-inf ${right}]`;
+      case "in":
+        return right.map((value: string) => `@${left}:{${value}}`).join(" | ");
+      case "nin":
+        return right.map((value: string) => `-@${left}:{${value}}`).join(" ");
+      case "like":
+        return `@${left}:/.*${right}.*/`;
+      default:
+        throw new Error(`Unsupported operator ${operator}`);
+    }
+  }
+
+  private static parseNestedCondition(
+    nestedCondition: NestedCondition
+  ): string {
+    const { conditions, operator } = nestedCondition;
+    const parsedConditions = conditions
+      .map((cond) => RedisWhereParser.parse(cond))
+      .join(` ${operator.toUpperCase()} `);
+
+    return `(${parsedConditions})`;
   }
 }
