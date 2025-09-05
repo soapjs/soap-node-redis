@@ -5,6 +5,7 @@ import {
   Mapper,
   RemoveParams,
   Where,
+  RepositoryQuery,
 } from "@soapjs/soap";
 import { RedisWhereParser } from "./redis.where.parser";
 

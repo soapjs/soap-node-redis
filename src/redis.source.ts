@@ -18,6 +18,11 @@ export class RedisSource {
     client.on("error", (error) => console.log(`[Redis] Error: ${error}`));
     await client.connect();
 
+    // Select database if specified
+    if (config.database != null) {
+      await client.select(Number(config.database));
+    }
+
     return new RedisSource(client);
   }
 

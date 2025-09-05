@@ -27,10 +27,10 @@ export type RedisSortedDocument = {
 
 /**
  * Represents a Redis hash document.
- * @typedef {Object.<string, string|object|number|Buffer>} RedisHashDocument
+ * @typedef {Object.<string, string|object|number|Buffer|boolean>} RedisHashDocument
  */
 export type RedisHashDocument = {
-  [key: string]: string | object | number | Buffer;
+  [key: string]: string | object | number | Buffer | boolean;
 };
 
 /**

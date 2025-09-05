@@ -3,25 +3,28 @@ import {
   NestedCondition,
   Where,
   WhereCondition,
+  VariedCondition,
 } from "@soapjs/soap";
 
 /**
  * Class for parsing Where clauses and converting them into RedisSearch command parameters.
  */
 export class RedisWhereParser {
-  static parse(data: Where | WhereCondition | null): string {
+  static parse(data: Where | WhereCondition | Condition | VariedCondition | NestedCondition | null): string {
     if (!data) {
       return "*";
     }
 
     if (data instanceof Where) {
-      return RedisWhereParser.parse(data.result);
+      return RedisWhereParser.parse(data.build());
     }
 
-    if ("left" in data) {
-      return RedisWhereParser.parseSimpleCondition(data);
-    } else if ("conditions" in data) {
-      return RedisWhereParser.parseNestedCondition(data);
+    if ("left" in data && "operator" in data && "right" in data) {
+      return RedisWhereParser.parseSimpleCondition(data as Condition);
+    } else if ("conditions" in data && "operator" in data) {
+      return RedisWhereParser.parseNestedCondition(data as VariedCondition);
+    } else if ("result" in data) {
+      return RedisWhereParser.parse((data as NestedCondition).result);
     }
 
     throw new Error("Invalid condition format");
@@ -54,9 +57,9 @@ export class RedisWhereParser {
   }
 
   private static parseNestedCondition(
-    nestedCondition: NestedCondition
+    variedCondition: VariedCondition
   ): string {
-    const { conditions, operator } = nestedCondition;
+    const { conditions, operator } = variedCondition;
     const parsedConditions = conditions
       .map((cond) => RedisWhereParser.parse(cond))
       .join(` ${operator.toUpperCase()} `);

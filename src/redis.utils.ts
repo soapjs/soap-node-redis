@@ -10,8 +10,13 @@ export class RedisUtils {
     const { user, password, iana, database } = config;
     let url = iana ? "rediss://" : "redis://";
 
-    if (user && password) {
-      url += `${user}:${password}@`;
+    if (password) {
+      if (user) {
+        url += `${user}:${password}@`;
+      } else {
+        // For Redis, when there's only password without user, we need to use a default user
+        url += `default:${password}@`;
+      }
     }
 
     const hosts = config.hosts.length ? config.hosts : ["localhost"];
@@ -30,15 +35,14 @@ export class RedisUtils {
 
     url += hostsAndPorts.join(",");
 
-    if (database != null) {
-      url += `/${database}`;
-    }
+    // Note: Database selection is handled via SELECT command, not URL path
+    // Redis client doesn't support database in URL path
 
     return url;
   }
 
   static convertStringToQueryArray(rawQuery: string) {
     const parts = rawQuery.match(/(?:[^\s"]+|"[^"]*")+/g);
-    return parts.map((part) => part.replace(/"/g, ""));
+    return parts ? parts.map((part) => part.replace(/"/g, "")) : [];
   }
 }
