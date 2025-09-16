@@ -1,6 +1,6 @@
 {
   "name": "@soapjs/soap-node-redis",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Seamless Redis integration for SoapJS projects, facilitating clean architecture practices and streamlined database interactions.",
   "homepage": "https://docs.soapjs.com",
   "repository": "https://github.com/soapjs/soap-node-redis",
@@ -26,7 +26,7 @@
     "typescript": "^4.8.2"
   },
   "peerDependencies": {
-    "@soapjs/soap": "file:../soap/soapjs-soap-0.5.19.tgz",
+    "@soapjs/soap": "^0.6.5",
     "redis": ">=4.6.7"
   }
 }
