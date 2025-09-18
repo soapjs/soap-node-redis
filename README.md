@@ -134,14 +134,14 @@ const where = new Where()
 
 const result = await userRepo.find({ where });
 if (result.isSuccess()) {
-  const users = result.value;
+  const users = result.content;
   console.log('Found users:', users);
 }
 
 // Count users
 const countResult = await userRepo.count({ where });
 if (countResult.isSuccess()) {
-  console.log('User count:', countResult.value);
+  console.log('User count:', countresult.content);
 }
 
 // Add new user
@@ -156,7 +156,7 @@ const newUser: User = {
 
 const addResult = await userRepo.add([newUser]);
 if (addResult.isSuccess()) {
-  console.log('User added:', addResult.value);
+  console.log('User added:', addresult.content);
 }
 
 // Update user
@@ -166,7 +166,7 @@ const updateResult = await userRepo.update({
   methods: ['updateOne']
 });
 if (updateResult.isSuccess()) {
-  console.log('User updated:', updateResult.value);
+  console.log('User updated:', updateresult.content);
 }
 
 // Remove user
@@ -174,7 +174,7 @@ const removeResult = await userRepo.remove({
   where: new Where().valueOf('id').isEq('user-123')
 });
 if (removeResult.isSuccess()) {
-  console.log('User removed:', removeResult.value);
+  console.log('User removed:', removeresult.content);
 }
 ```
 
@@ -351,8 +351,8 @@ class UserService {
     const where = new Where().valueOf('id').isEq(id);
     const result = await this.userRepo.find({ where, limit: 1 });
     
-    if (result.isSuccess() && result.value.length > 0) {
-      const user = result.value[0];
+    if (result.isSuccess() && result.content.length > 0) {
+      const user = result.content[0];
       
       // Cache the result
       await this.cacheManager.set(cacheKey, user, 1800); // 30 minutes
@@ -378,7 +378,7 @@ class UserService {
     
     if (result.isSuccess()) {
       // Cache for 5 minutes
-      await this.cacheManager.set(cacheKey, result.value, 300);
+      await this.cacheManager.set(cacheKey, result.content, 300);
     }
     
     return result;
